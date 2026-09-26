@@ -1,4 +1,4 @@
-# KAUST HPC AI Inference Lab
+# HPC AI Inference Lab
 
 A practical HPC/AI infrastructure project demonstrating how GPU-based LLM workloads can be provisioned, scheduled, containerized, monitored, and troubleshot using Slurm on Google Cloud.
 
@@ -145,8 +145,3 @@ A scheduler-visible `PENDING` state can therefore originate from an underlying c
 ## Purpose
 
 This project was built as a hands-on AI/HPC support laboratory, focusing on the infrastructure and operational challenges involved in running GPU-based research workloads on a Slurm cluster.
-
-
-This version is intentionally **much tighter** than the previous README. It gives a recruiter/interviewer the three things they need immediately:
-
-**What is it → how is it built → what did you actually troubleshoot.**
