@@ -1,0 +1,57 @@
+blueprint_name: kaust-ai-hpc-cluster
+
+vars:
+  project_id: apiprojects-469208
+  deployment_name: ai-inference-slurm
+  region: us-central1
+  zone: us-central1-c
+
+deployment_groups:
+  - group: primary
+    modules:
+      # 1. Network Configuration
+      - id: network
+        source: modules/network/vpc
+        
+      # 2. Private Service Access (Required for Filestore storage)
+      - id: private_service_access
+        source: modules/network/private-service-access
+        use: [network]
+
+      # 3. Shared Storage (Simulating HPC Parallel File System)
+      - id: homefs
+        source: modules/file-system/filestore
+        use: [network, private_service_access]
+        settings:
+          local_mount: "/home"
+          filestore_tier: "BASIC_HDD"
+          size_gb: 1024
+
+      # 4. Slurm Nodeset (Defines the GPU machines)
+      - id: gpu_nodeset
+        source: community/modules/compute/schedmd-slurm-gcp-v6-nodeset
+        use: [network]
+        settings:
+          node_count_dynamic_max: 2
+          machine_type: "g2-standard-4" # This machine comes with 1x NVIDIA L4 GPU
+
+      # 5. Slurm Partition (Groups the nodesets)
+      - id: gpu_partition
+        source: community/modules/compute/schedmd-slurm-gcp-v6-partition
+        use: [gpu_nodeset]
+        settings:
+          partition_name: "gpu"
+          is_default: true
+
+      # 6. Slurm Login Node (Where you will SSH in)
+      - id: slurm_login
+        source: community/modules/scheduler/schedmd-slurm-gcp-v6-login
+        use: [network]
+        settings:
+          machine_type: "e2-standard-2"
+          enable_login_public_ips: true
+
+      # 7. Slurm Controller (Head Node)
+      - id: slurm_cluster
+        source: community/modules/scheduler/schedmd-slurm-gcp-v6-controller
+        use: [network, homefs, gpu_partition, slurm_login]
